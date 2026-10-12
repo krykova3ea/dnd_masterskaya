@@ -1,0 +1,11 @@
+node_modules
+server/node_modules
+client/node_modules
+.git
+uploads
+*.pdf
+*.docx
+server/.env
+server/dist
+client/dist
+pgdata

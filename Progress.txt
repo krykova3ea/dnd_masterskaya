@@ -1,0 +1,115 @@
+Скрипт deploy.sh создан и готов. Вот как им пользоваться:
+# 1. Скопировать архив с проектом на хост (USB, scp)
+# 2. Распаковать
+unzip Diplom.zip && cd Diplom
+
+# 3. Запустить
+chmod +x deploy.sh
+./deploy.sh
+Что делает скрипт:
+Шаг	Действие
+0	Проверяет ОС (Ubuntu/Debian) и архитектуру
+1	Проверяет доступ к sudo
+2	Ставит Docker + Compose (если не установлен) через официальный репозиторий Docker
+3	Запускает Docker-демон (systemctl start docker)
+4	Добавляет пользователя в группу docker (чтобы работал без sudo)
+5	Проверяет, что порт 3001 свободен
+6	Запускает docker compose up --build -d (сборка + запуск в фоне)
+7	Опрашивает /api/health каждые 2с, таймаут 120с
+8	Выводит URL доступа, команды управления и учётные данные БД
+Node.js, PostgreSQL, npm — не ставятся на хост. Всё внутри контейнеров. БД dnd_workshop создаётся автоматически, schema.sql + seed.sql применяются через docker-entrypoint.sh при первом запуске.
+
+Поток работы скрипта:
+deploy.sh
+  ├─ Ставит Docker (единственное, что нужно на хосте)
+  ├─ docker compose up --build
+  │    ├─ Контейнер db:    PostgreSQL 17 → создаёт БД dnd_workshop
+  │    ├─ Контейнер app:   Node.js 20 → собирает клиент + сервер
+  │    └─ entrypoint.sh:   применяет schema.sql + seed.sql
+  └─ Готово: http://localhost:3001
+  
+Вот план скрипта deploy.sh, который кладётся в корень проекта (рядом с docker-compose.yml):
+Что делает скрипт
+1. Проверка окружения
+- Проверяет ОС — Ubuntu/Debian через /etc/os-release
+- Проверяет наличие sudo (нужен для установки Docker)
+2. Установка Docker (если не установлен)
+# Проверка: docker уже есть?
+if ! command -v docker &> /dev/null; then
+    # Установка prerequisites
+    sudo apt-get update
+    sudo apt-get install -y ca-certificates curl gnupg
+
+    # GPG ключ Docker
+    sudo install -m 0755 -d /etc/apt/keyrings
+    curl -fsSL https://download.docker.com/linux/ubuntu/gpg | \
+        sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+    sudo chmod a+r /etc/apt/keyrings/docker.gpg
+
+    # Репозиторий Docker
+    echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] \
+        https://download.docker.com/linux/ubuntu $(. /etc/os-release && echo "$VERSION_CODENAME") stable" | \
+        sudo tee /etc/apt/sources.list.d/docker.list
+
+    # Установка
+    sudo apt-get update
+    sudo apt-get install -y docker-ce docker-ce-cli containerd.io \
+        docker-buildx-plugin docker-compose-plugin
+fi
+3. Запуск Docker-сервиса
+sudo systemctl start docker
+sudo systemctl enable docker
+4. Добавление пользователя в группу docker
+sudo usermod -aG docker $USER
+— чтобы docker compose работал без sudo. Если пользователь только что добавлен — скрипт использует sg docker (newgrp) для текущей сессии.
+5. Сборка и запуск
+docker compose up --build -d
+— -d (detached) чтобы скрипт завершился, а контейнеры работали в фоне.
+6. Ожидание готовности
+- Скрипт опрашивает http://localhost:3001/api/health каждые 2 секунды
+- Таймаут — 60 секунд
+- Печатает ✓ Приложение готово: http://localhost:3001
+7. Информационный вывод
+✓ Docker установлен
+✓ Контейнеры запущены
+✓ Приложение доступно: http://localhost:3001
+
+Команды управления:
+  Остановка:     docker compose down
+  Логи:          docker compose logs -f
+  Перезапуск:    docker compose restart
+  Удалить всё:   docker compose down -v
+Использование
+# 1. Скопировать архив на хост (USB/scp)
+# 2. Распаковать
+unzip Diplom.zip && cd Diplom
+
+# 3. Запустить скрипт
+chmod +x deploy.sh
+./deploy.sh
+
+
+1. Подготовка на хосте
+Убедиться, что установлены Docker и Docker Compose:
+docker --version
+docker compose version
+2. Копирование проекта
+Скопировать весь проект на хост (через git clone, scp или архив). Убедиться, что uploads/ не включён (он в .gitignore).
+3. Запуск
+cd Diplom
+docker compose up --build
+Это:
+- Соберёт клиент (Vite build) и сервер (tsc) в multi-stage Dockerfile
+- Запустит PostgreSQL 17 с healthcheck
+- Применит db/schema.sql + db/seed.sql автоматически (через docker-entrypoint.sh)
+- Запустит приложение на порту 3001
+4. Проверка
+Открыть http://localhost:3001 — приложение готово (SPA + API на одном порту).
+5. Остановка
+docker compose down          # остановить
+docker compose down -v       # остановить + удалить данные БД
+Важно
+- Если на хосте занят порт 3001 — изменить в docker-compose.yml (строка ports: - "3001:3001")
+- Если показывать с другого устройства — можно указать "0.0.0.0:3001:3001" и открыть по IP хоста
+- БД недоступна снаружи (порт 5432 не проброшен — мы это исправили)
+- Приложение работает от пользователя node, а не root

@@ -1,0 +1,378 @@
+// ============================================================================
+// D&D Мастерская — Глобальные стили
+// Препроцессор SASS (SCSS), CSS modules, flexbox
+// Темы: тёмная (по умолчанию) и светлая (через data-theme="light")
+// ============================================================================
+
+@use 'variables' as *;
+@use 'components' as *;
+
+// --- CSS custom properties: тёмная тема (по умолчанию) ---
+:root {
+  --color-bg-dark: #1a1528;
+  --color-bg-panel: #252038;
+  --color-bg-panel-light: #2f2945;
+  --color-accent: #c9a96e;
+  --color-accent-hover: #d9bd8a;
+  --color-accent-dark: #8b7355;
+  --color-text: #e0dcc8;
+  --color-text-muted: #8a8478;
+  --color-danger: #c44545;
+  --color-danger-hover: #d65a5a;
+  --color-success: #5a8a5a;
+  --color-border: #3d3654;
+  --color-link: #8ec5e8;
+}
+
+// --- CSS custom properties: светлая тема ---
+[data-theme="light"] {
+  --color-bg-dark: #f5f0e1;
+  --color-bg-panel: #ffffff;
+  --color-bg-panel-light: #ede8d8;
+  --color-accent: #8b7355;
+  --color-accent-hover: #6b5a42;
+  --color-accent-dark: #5a4a35;
+  --color-text: #2a2418;
+  --color-text-muted: #7a7060;
+  --color-danger: #b53838;
+  --color-danger-hover: #c44848;
+  --color-success: #4a7a4a;
+  --color-border: #ccc4b0;
+  --color-link: #3a7a9a;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: $font-ui;
+  background-color: var(--color-bg-dark);
+  color: var(--color-text);
+  min-height: 100vh;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+a {
+  color: var(--color-link);
+  text-decoration: none;
+  &:hover { text-decoration: underline; }
+}
+
+#root {
+  min-height: 100vh;
+}
+
+.app {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+
+  &__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 24px;
+    padding-bottom: 16px;
+    border-bottom: 2px solid var(--color-border);
+  }
+
+  &__title {
+    font-family: $font-main;
+    font-size: 28px;
+    color: var(--color-accent);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  &__nav {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+  }
+}
+
+// Кнопки
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border: 1px solid var(--color-border);
+  border-radius: $radius;
+  background: var(--color-bg-panel-light);
+  color: var(--color-text);
+  font-family: $font-ui;
+  font-size: 14px;
+  cursor: pointer;
+  transition: $transition;
+  text-decoration: none;
+
+  &:hover:not(:disabled) {
+    background: var(--color-border);
+    border-color: var(--color-accent-dark);
+  }
+
+  &:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+
+  &--primary {
+    background: var(--color-accent);
+    color: var(--color-bg-dark);
+    border-color: var(--color-accent);
+    font-weight: 600;
+
+    &:hover:not(:disabled) {
+      background: var(--color-accent-hover);
+      border-color: var(--color-accent-hover);
+    }
+  }
+
+  &--danger {
+    color: var(--color-danger);
+    border-color: var(--color-danger);
+
+    &:hover:not(:disabled) {
+      background: var(--color-danger);
+      color: var(--color-text);
+    }
+  }
+
+  &--small {
+    padding: 4px 10px;
+    font-size: 12px;
+  }
+}
+
+// Поля ввода
+.input,
+.select,
+.textarea {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid var(--color-border);
+  border-radius: $radius;
+  background: var(--color-bg-dark);
+  color: var(--color-text);
+  font-family: $font-ui;
+  font-size: 14px;
+  transition: $transition;
+
+  &:focus {
+    outline: none;
+    border-color: var(--color-accent);
+    box-shadow: 0 0 0 2px rgba(201, 169, 110, 0.15);
+  }
+
+  &::placeholder {
+    color: var(--color-text-muted);
+  }
+}
+
+.textarea {
+  resize: vertical;
+  min-height: 80px;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+
+  &__label {
+    font-size: 13px;
+    color: var(--color-text-muted);
+    font-weight: 600;
+  }
+}
+
+// Бейджи для типов
+.type-badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+}
+
+@each $type, $color in $type-colors {
+  .type-badge--#{$type} {
+    background: rgba($color, 0.2);
+    color: $color;
+    border: 1px solid rgba($color, 0.4);
+  }
+}
+
+// Бейджи важности
+.importance-badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.importance-badge--Низкая {
+  background: rgba(#8a8478, 0.2);
+  color: #8a8478;
+  border: 1px solid rgba(#8a8478, 0.4);
+}
+.importance-badge--Средняя {
+  background: rgba(#c9a96e, 0.2);
+  color: #c9a96e;
+  border: 1px solid rgba(#c9a96e, 0.4);
+}
+.importance-badge--Высокая {
+  background: rgba(#e8a44c, 0.2);
+  color: #e8a44c;
+  border: 1px solid rgba(#e8a44c, 0.4);
+}
+.importance-badge--Ключевая-для-сюжета {
+  background: rgba(#e85c5c, 0.2);
+  color: #e85c5c;
+  border: 1px solid rgba(#e85c5c, 0.4);
+}
+
+// Переключатель темы
+.theme-toggle {
+  background: var(--color-bg-panel-light);
+  border: 1px solid var(--color-border);
+  border-radius: $radius;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 18px;
+  transition: $transition;
+
+  &:hover {
+    background: var(--color-border);
+  }
+}
+
+// ============================================================================
+// Адаптивная вёрстка
+// ============================================================================
+
+@media (max-width: 768px) {
+  .app {
+    padding: 12px;
+
+    &__header {
+      flex-direction: column;
+      gap: 12px;
+      align-items: stretch;
+    }
+
+    &__title {
+      font-size: 22px;
+      text-align: center;
+    }
+
+    &__nav {
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+  }
+
+  .filter-panel__grid {
+    flex-direction: column;
+
+    .field {
+      min-width: 100%;
+    }
+  }
+
+  .entity-form__grid {
+    flex-direction: column;
+
+    .field {
+      min-width: 100%;
+    }
+  }
+
+  .entity-list__col--importance {
+    width: auto;
+    max-width: 100px;
+    font-size: 11px;
+  }
+
+  .entity-list__col--date {
+    display: none;
+  }
+
+  .entity-list__col--actions {
+    width: auto;
+  }
+
+  .entity-node__actions {
+    opacity: 1;
+  }
+
+  .entity-node__date {
+    display: none;
+  }
+
+  .attribute-editor__add {
+    flex-direction: column;
+  }
+
+  .relation-editor__add {
+    flex-direction: column;
+  }
+
+  .dashboard__cards {
+    flex-direction: column;
+  }
+
+  .dashboard__bar-label {
+    width: auto;
+    min-width: 80px;
+    font-size: 12px;
+  }
+
+  .entity-detail__image {
+    width: 80px;
+    height: 80px;
+  }
+
+  .entity-detail__title {
+    font-size: 20px;
+  }
+
+  .modal {
+    width: 95%;
+    padding: 16px;
+  }
+}
+
+@media (max-width: 480px) {
+  .app__title {
+    font-size: 18px;
+  }
+
+  .entity-list__col--importance {
+    display: none;
+  }
+
+  .entity-list__header {
+    font-size: 10px;
+  }
+
+  .dashboard__card-value {
+    font-size: 28px;
+  }
+
+  .btn {
+    font-size: 13px;
+    padding: 6px 12px;
+  }
+}

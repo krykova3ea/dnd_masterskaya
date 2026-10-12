@@ -1,0 +1,32 @@
+# Зависимости
+node_modules/
+server/node_modules/
+client/node_modules/
+
+# Сборка
+server/dist/
+client/dist/
+
+# Переменные окружения
+.env
+server/.env
+*.env.local
+
+# Docker
+pgdata/
+
+# Загруженные изображения
+uploads/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# PDF (образец)
+*.pdf
